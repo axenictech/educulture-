@@ -1,55 +1,63 @@
 class SubjectsController < ApplicationController
+
+  before_action :set_subject, only:[:show,:edit,:update,:destroy]
   
-  def index
-  	@subjects=Subject.all
-    @electivegroups=Electivegroup.all
-  end
+	def index
+    	@batches = Batch.all
+      @batch = Batch.find params[:batch_id]
+      @subjects=@batch.subjects.all
+      @elective_groups=@batch.elective_groups.all
+  	end
 
-  def new
- #create object of subject class
-  	@subject=Subject.new
-  end
+  	def new
+	    @batch = Batch.find(params[:batch_id])
+      @subject=@batch.subjects.build
 
-  def create
-  #pass private subject_params method
-  	@subject=Subject.new(subject_params)
-  #save data from object
-  	if @subject.save
-  #redirect to object
-  	   redirect_to subjects_path
-    else
-       render 'new'
+      @elective_group=ElectiveGroup.find(params[:elective_group_id]) if @elective_group.exists?
+      @subject=@elective_group.subjects.build
+  	end
+  	
+  	def create
+  		@batch=Batch.find(params[:batch_id])
+      @elective_group=ElectiveGroup.find params[:elective_group_id]
+        @subject=@batch.subjects.new(subject_params)
+        @subject=@elective_group.subjects.new(subject_params)
+       if @subject.save
+         redirect_to batch_subjects_path, notice: "Subject was successfully created"
+      else
+         render 'new'
+      end
+  	end
+
+    def show       
     end
-  end
 
-  def show
-  #find data from subject by pass id
-  	@subject=Subject.find(params[:id])	
-  end
+    def edit  
+    end
 
-  def edit
- #find data from subject by pass id
-  	@subject=Subject.find(params[:id])	
-  end
+    def update
+      if @subject.update(subject_params)
+         redirect_to batch_subjects_path, notice: "Subject was successfully updated"
+      else
+        render 'new'
+      end
+    end
 
-  def update
-  #find data from subject by pass id
-  	@subject=Subject.find(params[:id])
-  #update data
-  	@subject.update(subject_params)
-  	redirect_to subjects_path
-  end
+    def destroy
+     if @subject.destroy
+        redirect_to batch_subjects_path, notice: "Subject was successfully deleted"
+      else
+        redirect_to batch_subjects_path, notice: "Subject was uanable to delete"
+      end
+    end
 
-  def destroy
- #find data from subject by pass id
-  	@subject=Subject.find(params[:id])
- #destroy data from object
- 	@subject.destroy
- 	redirect_to @subject
-  end
+  	private
+    def set_subject
+      @batch=Batch.find(params[:batch_id])
+      @subject=@batch.subjects.find(params[:id])
+    end
 
-  private def subject_params
-  #pass params throught private permit method
-  	params.require(:subject).permit(:name, :code, :max_weekily_classes, :credit_hours, :no_exams)
-  end
+	  def subject_params
+	  	params.require(:subject).permit(:name, :code, :max_weekly_classes, :no_exams)
+	  end
 end

@@ -1,3 +1,6 @@
 class Batch < ActiveRecord::Base
-  belongs_to :course
+
+    has_many :subjects
+    has_many :elective_groups
+
 end
